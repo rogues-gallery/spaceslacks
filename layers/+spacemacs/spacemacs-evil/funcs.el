@@ -1,13 +1,25 @@
-;;; funcs.el --- Spacemacs Evil Layer functions File
+;;; funcs.el --- Spacemacs Evil Layer functions File  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defvar spacemacs--evil-iedit-insert-states-default nil
   "Default value of the list of additional states enabled in \
@@ -20,8 +32,7 @@
 (defun spacemacs//enable-hs-minor-mode ()
   "Enable hs-minor-mode for code folding."
   (ignore-errors
-    (hs-minor-mode)
-    (spacemacs|hide-lighter hs-minor-mode)))
+    (hs-minor-mode)))
 
 (defun spacemacs//iedit-insert-state-hybrid (style)
   "If STYLE is hybrid, update `evil-iedit-insert-state' definition to enable
@@ -49,23 +60,16 @@ Otherwise, revert to the default behavior (i.e. enable `evil-insert-state')."
           (kbd "TAB") 'iedit-toggle-selection)
         (define-key iedit-occurrence-keymap-default
           [tab] 'iedit-toggle-selection))
-    (progn
-      (define-key iedit-occurrence-keymap-default
-        (kbd "TAB") 'iedit-next-occurrence)
-      (define-key iedit-occurrence-keymap-default
-        [tab] 'iedit-next-occurrence))))
+    (define-key iedit-occurrence-keymap-default
+      (kbd "TAB") 'iedit-next-occurrence)
+    (define-key iedit-occurrence-keymap-default
+      [tab] 'iedit-next-occurrence)))
 
 (defun spacemacs//evil-escape-deactivate-in-holy-mode  (style)
   "Deactivate `evil-escape' if STYLE is `emacs' otherwise enable it."
   (if (memq style '(vim hybrid))
       (evil-escape-mode t)
     (evil-escape-mode -1)))
-
-(defun spacemacs/linum-relative-toggle ()
-  (interactive)
-  (if (not (bound-and-true-p linum-relative-mode))
-      (linum-mode))
-  (linum-relative-toggle))
 
 
 ;; vi-tilde-fringe
@@ -84,4 +88,51 @@ Otherwise, revert to the default behavior (i.e. enable `evil-insert-state')."
 
 (defun spacemacs//load-evil-lisp-state ()
   "Load evil-lisp-state lazily"
-  (require 'evil-lisp-state))
+  (require 'evil-lisp-state)
+  (remove-hook 'prog-mode-hook #'spacemacs//load-evil-lisp-state))
+
+
+;; evil-nerd-commenter
+
+;; double all the commenting functions so that the inverse operations
+;; can be called without setting a flag
+(defun spacemacs/comment-or-uncomment-lines-inverse (&optional arg)
+  (interactive "p")
+  (let ((evilnc-invert-comment-line-by-line t))
+    (evilnc-comment-or-uncomment-lines arg)))
+
+(defun spacemacs/comment-or-uncomment-lines (&optional arg)
+  (interactive "p")
+  (let ((evilnc-invert-comment-line-by-line nil))
+    (evilnc-comment-or-uncomment-lines arg)))
+
+(defun spacemacs/copy-and-comment-lines-inverse (&optional arg)
+  (interactive "p")
+  (let ((evilnc-invert-comment-line-by-line t))
+    (evilnc-copy-and-comment-lines arg)))
+
+(defun spacemacs/copy-and-comment-lines (&optional arg)
+  (interactive "p")
+  (let ((evilnc-invert-comment-line-by-line nil))
+    (evilnc-copy-and-comment-lines arg)))
+
+(defun spacemacs/quick-comment-or-uncomment-to-the-line-inverse
+    (&optional arg)
+  (interactive "p")
+  (let ((evilnc-invert-comment-line-by-line t))
+    (evilnc-comment-or-uncomment-to-the-line arg)))
+
+(defun spacemacs/quick-comment-or-uncomment-to-the-line (&optional arg)
+  (interactive "p")
+  (let ((evilnc-invert-comment-line-by-line nil))
+    (evilnc-comment-or-uncomment-to-the-line arg)))
+
+(defun spacemacs/comment-or-uncomment-paragraphs-inverse (&optional arg)
+  (interactive "p")
+  (let ((evilnc-invert-comment-line-by-line t))
+    (evilnc-comment-or-uncomment-paragraphs arg)))
+
+(defun spacemacs/comment-or-uncomment-paragraphs (&optional arg)
+  (interactive "p")
+  (let ((evilnc-invert-comment-line-by-line nil))
+    (evilnc-comment-or-uncomment-paragraphs arg)))

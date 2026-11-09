@@ -1,40 +1,40 @@
-;;; funcs.el --- Elm Layer functions File for Spacemacs
+;;; funcs.el --- Elm Layer functions File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(defun spacemacs//elm-backend ()
-  "Returns selected backend."
-  (if elm-backend
-      elm-backend
-    (cond
-     ((configuration-layer/layer-used-p 'lsp) 'lsp)
-     (t 'company-elm))))
 
 (defun spacemacs//elm-setup-company ()
   "Conditionally setup company based on backend."
-  (pcase (spacemacs//elm-backend)
-    ;; Activate lsp company explicitly to activate
-    ;; standard backends as well
-    (`lsp (spacemacs|add-company-backends
-            :backends company-capf
-            :modes elm-mode))
-    (`company-elm (spacemacs|add-company-backends
-                    :backends elm-company
-                    :modes elm-mode))))
+  (pcase elm-backend
+    ('lsp
+     (spacemacs|add-company-backends ;; Activate lsp company explicitly to activate
+       :backends company-capf        ;; standard backends as well
+       :modes elm-mode))
+    ('company-elm
+      (message "Warning: `company-elm' backend is no longer supported for `elm' layer, use `lsp' instead."))))
 
 (defun spacemacs//elm-setup-backend ()
   "Conditionally setup elm backend."
   (spacemacs/init-elm-mode)
-  (pcase (spacemacs//elm-backend)
-    (`lsp (lsp))
-    (`company-elm (elm-oracle-setup-completion))))
+  (when (eq elm-backend 'lsp) (lsp-deferred)))
 
 
 ;; elm-mode

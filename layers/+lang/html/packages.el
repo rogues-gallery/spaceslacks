@@ -1,13 +1,25 @@
-;;; packages.el --- HTML Layer packages File for Spacemacs
+;;; packages.el --- HTML Layer packages File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (setq html-packages
       '(
@@ -32,8 +44,8 @@
         tagedit
         web-mode
         yasnippet
-        web-beautify
-        ))
+        web-beautify))
+
 
 (defun html/post-init-add-node-modules-path ()
   (add-hook 'css-mode-hook #'add-node-modules-path)
@@ -54,41 +66,34 @@
   (use-package company-web
     :defer t
     :init
-    (progn
-      (spacemacs|add-company-backends
-        :backends (company-web-html company-css)
-        :modes web-mode)
-      (spacemacs|add-company-backends
-        :backends company-web-jade
-        :modes pug-mode)
-      (spacemacs|add-company-backends
-        :backends company-web-slim
-        :modes slim-mode))))
+    (spacemacs|add-company-backends
+      :backends (company-web-html company-css)
+      :modes web-mode)
+    (spacemacs|add-company-backends
+      :backends company-web-jade
+      :modes pug-mode)
+    (spacemacs|add-company-backends
+      :backends company-web-slim
+      :modes slim-mode)))
 
 (defun html/init-css-mode ()
   (use-package css-mode
     :defer t
     :init
-    (progn
-      ;; Mark `css-indent-offset' as safe-local variable
-      (put 'css-indent-offset 'safe-local-variable #'integerp)
+    ;; Mark `css-indent-offset' as safe-local variable
+    (put 'css-indent-offset 'safe-local-variable #'integerp)
 
-      (when css-enable-lsp
-        (add-hook 'css-mode-hook
-                  #'spacemacs//setup-lsp-for-web-mode-buffers t))
+    (when css-enable-lsp
+      (add-hook 'css-mode-hook
+                #'spacemacs//setup-lsp-for-web-mode-buffers t))
 
-      ;; Explicitly run prog-mode hooks since css-mode does not derive from
-      ;; prog-mode major-mode in Emacs 24 and below.
-      (when (version< emacs-version "25")
-        (add-hook 'css-mode-hook 'spacemacs/run-prog-mode-hooks))
+    (spacemacs/declare-prefix-for-mode 'css-mode "m=" "format")
+    (spacemacs/declare-prefix-for-mode 'css-mode "mg" "goto")
+    (spacemacs/declare-prefix-for-mode 'css-mode "mz" "foldz")
 
-      (spacemacs/declare-prefix-for-mode 'css-mode "m=" "format")
-      (spacemacs/declare-prefix-for-mode 'css-mode "mg" "goto")
-      (spacemacs/declare-prefix-for-mode 'css-mode "mz" "foldz")
-
-      (spacemacs/set-leader-keys-for-major-mode 'css-mode
-        "zc" 'spacemacs/css-contract-statement
-        "zo" 'spacemacs/css-expand-statement))))
+    (spacemacs/set-leader-keys-for-major-mode 'css-mode
+      "zc" 'spacemacs/css-contract-statement
+      "zo" 'spacemacs/css-expand-statement)))
 
 (defun html/init-emmet-mode ()
   (use-package emmet-mode
@@ -99,11 +104,11 @@
                                                 scss-mode-hook
                                                 web-mode-hook))
     :config
-    (progn
-      (define-key emmet-mode-keymap (kbd "<C-return>") 'spacemacs/emmet-expand)
-      (spacemacs|hide-lighter emmet-mode))))
+    (define-key emmet-mode-keymap (kbd "C-<return>") 'spacemacs/emmet-expand)
+    (spacemacs|hide-lighter emmet-mode)))
 
 (defun html/post-init-evil-matchit ()
+  (evilmi-load-plugin-rules '(web-mode) '(simple template html))
   (add-hook 'web-mode-hook 'turn-on-evil-matchit-mode))
 
 (defun html/post-init-flycheck ()
@@ -139,9 +144,8 @@
   (use-package impatient-mode
     :defer t
     :init
-    (progn
-      (dolist (mode '(web-mode css-mode))
-        (spacemacs/set-leader-keys-for-major-mode 'web-mode "I" 'spacemacs/impatient-mode)))))
+    (dolist (mode '(web-mode css-mode))
+      (spacemacs/set-leader-keys-for-major-mode 'web-mode "I" 'spacemacs/impatient-mode))))
 
 (defun html/init-less-css-mode ()
   (use-package less-css-mode
@@ -173,6 +177,10 @@
     :init
     (when scss-enable-lsp
       (add-hook 'scss-mode-hook #'spacemacs//setup-lsp-for-web-mode-buffers t))
+    :config
+    ;; Workaround for old scss-mode from melpa, can be removed when we switch to the build in version in emacs 30 and later
+    (with-eval-after-load 'flymake
+      (require 'flymake-proc nil t))
     :mode ("\\.scss\\'" . scss-mode)))
 
 (defun html/init-slim-mode ()
@@ -181,57 +189,51 @@
 
 (defun html/post-init-smartparens ()
   (spacemacs/add-to-hooks
-   (if dotspacemacs-smartparens-strict-mode
-       'smartparens-strict-mode
-     'smartparens-mode)
+   #'spacemacs//activate-smartparens
    '(css-mode-hook scss-mode-hook sass-mode-hook less-css-mode-hook))
-
-  (add-hook 'web-mode-hook 'spacemacs/toggle-smartparens-off))
+  (add-hook 'web-mode-hook #'spacemacs//deactivate-smartparens))
 
 (defun html/init-tagedit ()
   (use-package tagedit
     :defer t
     :config
-    (progn
-      (tagedit-add-experimental-features)
-      (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
-      (spacemacs|diminish tagedit-mode " Ⓣ" " T"))))
+    (tagedit-add-experimental-features)
+    (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
+    (spacemacs|diminish tagedit-mode " Ⓣ" " T")))
 
 (defun html/init-web-mode ()
   (use-package web-mode
     :defer t
     :init
-    (progn
-      (spacemacs//web-setup-transient-state)
-      (when html-enable-lsp
-        (add-hook 'web-mode-hook #'spacemacs//setup-lsp-for-html-buffer t)))
+    (spacemacs//web-setup-transient-state)
+    (when html-enable-lsp
+      (add-hook 'web-mode-hook #'spacemacs//setup-lsp-for-html-buffer t))
+    (when html-enable-leex-support
+      (add-to-list 'auto-mode-alist '("\\.leex\\'" . web-mode)))
     :config
-    (progn
-      (spacemacs/declare-prefix-for-mode 'web-mode "m=" "format")
-      (spacemacs/declare-prefix-for-mode 'web-mode "mE" "errors")
-      (spacemacs/declare-prefix-for-mode 'web-mode "mg" "goto")
-      (spacemacs/declare-prefix-for-mode 'web-mode "mh" "dom")
-      (spacemacs/declare-prefix-for-mode 'web-mode "mr" "refactor")
-      (spacemacs/set-leader-keys-for-major-mode 'web-mode
-        "El" 'web-mode-dom-errors-show
-        "gb" 'web-mode-element-beginning
-        "gc" 'web-mode-element-child
-        "gp" 'web-mode-element-parent
-        "gs" 'web-mode-element-sibling-next
-        "hp" 'web-mode-dom-xpath
-        "rc" 'web-mode-element-clone
-        "rd" 'web-mode-element-vanish
-        "rk" 'web-mode-element-kill
-        "rr" 'web-mode-element-rename
-        "rw" 'web-mode-element-wrap
-        "z" 'web-mode-fold-or-unfold
-        ;; TODO element close would be nice but broken with evil.
-        ))
+    (spacemacs/declare-prefix-for-mode 'web-mode "m=" "format")
+    (spacemacs/declare-prefix-for-mode 'web-mode "mE" "errors")
+    (spacemacs/declare-prefix-for-mode 'web-mode "mg" "goto")
+    (spacemacs/declare-prefix-for-mode 'web-mode "mh" "dom")
+    (spacemacs/declare-prefix-for-mode 'web-mode "mr" "refactor")
+    (spacemacs/set-leader-keys-for-major-mode 'web-mode
+      "El" 'web-mode-dom-errors-show
+      "gb" 'web-mode-element-beginning
+      "gc" 'web-mode-element-child
+      "gp" 'web-mode-element-parent
+      "gs" 'web-mode-element-sibling-next
+      "hp" 'web-mode-dom-xpath
+      "rc" 'web-mode-element-clone
+      "rd" 'web-mode-element-vanish
+      "rk" 'web-mode-element-kill
+      "rr" 'web-mode-element-rename
+      "rw" 'web-mode-element-wrap
+      "z" 'web-mode-fold-or-unfold)
+    ;; TODO element close would be nice but broken with evil.
     :mode
     (("\\.phtml\\'"      . web-mode)
-     ("\\.tpl\\.php\\'"  . web-mode)
+     ("\\.tpl\\'"        . web-mode)
      ("\\.twig\\'"       . web-mode)
-     ("\\.xml\\'"        . web-mode)
      ("\\.html\\'"       . web-mode)
      ("\\.htm\\'"        . web-mode)
      ("\\.[gj]sp\\'"     . web-mode)
@@ -243,7 +245,6 @@
      ("\\.hbs\\'"        . web-mode)
      ("\\.eco\\'"        . web-mode)
      ("\\.ejs\\'"        . web-mode)
-     ("\\.svelte\\'"     . web-mode)
      ("\\.ctp\\'"        . web-mode)
      ("\\.djhtml\\'"     . web-mode))))
 

@@ -1,13 +1,25 @@
-;;; packages.el --- Japanese Layer packages File for Spacemacs
+;;; packages.el --- Japanese Layer packages File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Kenji Miyazaki <kenjimyzk@gmail.com>
 ;; URL: https://github.com/kenjimyzk/
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 ;; List of all packages to install and/or initialize. Built-in packages
 ;; which require an initialization must be listed explicitly in the list.
@@ -68,28 +80,28 @@
 (defun japanese/init-pangu-spacing ()
   (use-package pangu-spacing
     :init
-    (progn ;; replacing `chinese-two-byte' by `japanese'
-      (setq pangu-spacing-chinese-before-english-regexp
-            (rx (group-n 1 (category japanese))
-                (group-n 2 (in "a-zA-Z0-9"))))
-      (setq pangu-spacing-chinese-after-english-regexp
-            (rx (group-n 1 (in "a-zA-Z0-9"))
-                (group-n 2 (category japanese))))
-      (spacemacs|hide-lighter pangu-spacing-mode)
-      ;; Always insert `real' space in text-mode including org-mode.
-      (setq pangu-spacing-real-insert-separtor t)
-      ;; (global-pangu-spacing-mode 1)
-      (add-hook 'text-mode-hook 'pangu-spacing-mode))))
+    ;; replacing `chinese-two-byte' by `japanese'
+    (setq pangu-spacing-chinese-before-english-regexp
+          (rx (group-n 1 (category japanese))
+              (group-n 2 (in "a-zA-Z0-9"))))
+    (setq pangu-spacing-chinese-after-english-regexp
+          (rx (group-n 1 (in "a-zA-Z0-9"))
+              (group-n 2 (category japanese))))
+    (spacemacs|hide-lighter pangu-spacing-mode)
+    ;; Always insert `real' space in text-mode including org-mode.
+    (setq pangu-spacing-real-insert-separtor t)
+    ;; (global-pangu-spacing-mode 1)
+    (add-hook 'text-mode-hook 'pangu-spacing-mode)))
 
 (defun japanese/post-init-org ()
-  (defadvice org-html-paragraph (before org-html-paragraph-advice
-                                        (paragraph contents info) activate)
+  (define-advice org-html-paragraph
+      (:around (f paragraph contents info) org-html-paragraph-advice)
     "Join consecutive Japanese lines into a single long line without
 unwanted space when exporting org-mode to html."
-    (let* ((origin-contents (ad-get-arg 1))
+    (let* ((origin-contents contents)
            (fix-regexp "[[:multibyte:]]")
            (fixed-contents
             (replace-regexp-in-string
              (concat
               "\\(" fix-regexp "\\) *\n *\\(" fix-regexp "\\)") "\\1\\2" origin-contents)))
-      (ad-set-arg 1 fixed-contents))))
+      (funcall f paragraph fixed-contents info))))

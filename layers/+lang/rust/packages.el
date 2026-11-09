@@ -1,123 +1,104 @@
-;;; packages.el --- Rust Layer packages File for Spacemacs
+;;; packages.el --- Rust Layer packages File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Chris Hoeppner <me@mkaito.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defconst rust-packages
   '(
-    cargo
-    company
-    counsel-gtags
     dap-mode
     flycheck
-    (flycheck-rust :requires flycheck)
     ggtags
-    helm-gtags
     ron-mode
-    racer
-    rust-mode
-    smartparens
-    toml-mode))
+    rustic
+    smartparens))
 
-(defun rust/init-cargo ()
-  (use-package cargo
-    :defer t
-    :init
-    (progn
-      (spacemacs/declare-prefix-for-mode 'rust-mode "mc" "cargo")
-      (spacemacs/set-leader-keys-for-major-mode 'rust-mode
-        "c." 'cargo-process-repeat
-        "ca" 'cargo-process-add
-        "cA" 'cargo-process-audit
-        "cc" 'cargo-process-build
-        "cC" 'cargo-process-clean
-        "cd" 'cargo-process-doc
-        "cD" 'cargo-process-doc-open
-        "ce" 'cargo-process-bench
-        "cE" 'cargo-process-run-example
-        "cf" 'cargo-process-fmt
-        "ci" 'cargo-process-init
-        "cl" 'cargo-process-clippy
-        "cn" 'cargo-process-new
-        "co" 'cargo-process-current-file-tests
-        "cr" 'cargo-process-rm
-        "cs" 'cargo-process-search
-        "ct" 'cargo-process-current-test
-        "cu" 'cargo-process-update
-        "cU" 'cargo-process-upgrade
-        "cx" 'cargo-process-run
-        "cX" 'cargo-process-run-bin
-        "cv" 'cargo-process-check
-        "t" 'cargo-process-test))))
-
-(defun rust/post-init-company ()
-  ;; backend specific
-  (spacemacs//rust-setup-company))
-
-(defun rust/post-init-counsel-gtags ()
-  (spacemacs/counsel-gtags-define-keys-for-mode 'rust-mode))
 
 (defun rust/pre-init-dap-mode ()
-  (pcase (spacemacs//rust-backend)
-    (`lsp (add-to-list 'spacemacs--dap-supported-modes 'rust-mode)))
-  (add-hook 'rust-mode-local-vars-hook #'spacemacs//rust-setup-dap))
+  (when (eq rust-backend 'lsp)
+    (add-to-list 'spacemacs--dap-supported-modes 'rustic-mode)
+    (add-hook 'rustic-mode-local-vars-hook #'spacemacs//rust-setup-dap)))
 
 (defun rust/post-init-flycheck ()
-  (spacemacs/enable-flycheck 'rust-mode))
-
-(defun rust/init-flycheck-rust ()
-  (use-package flycheck-rust
-    :defer t
-    :init (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)))
+  (spacemacs/enable-flycheck 'rustic-mode))
 
 (defun rust/post-init-ggtags ()
-  (add-hook 'rust-mode-local-vars-hook #'spacemacs/ggtags-mode-enable))
+  (add-hook 'rustic-mode-local-vars-hook #'spacemacs/ggtags-mode-enable))
 
-(defun rust/post-init-helm-gtags ()
-  (spacemacs/helm-gtags-define-keys-for-mode 'rust-mode))
-
-(defun rust/init-racer ()
-  (use-package racer
+(defun rust/init-rustic ()
+  (use-package rustic
     :defer t
-    :commands racer-mode
-    :config
-    (progn
-      (spacemacs/add-to-hook 'rust-mode-hook '(racer-mode))
-      (spacemacs/add-to-hook 'racer-mode-hook '(eldoc-mode))
-      (add-to-list 'spacemacs-jump-handlers-rust-mode 'racer-find-definition)
-      (spacemacs/set-leader-keys-for-major-mode 'rust-mode
-        "hh" 'spacemacs/racer-describe)
-      (spacemacs|hide-lighter racer-mode)
-      (evilified-state-evilify-map racer-help-mode-map
-        :mode racer-help-mode))))
-
-(defun rust/init-rust-mode ()
-  (use-package rust-mode
-    :defer t
+    :mode ("\\.rs\\'" . rustic-mode)
     :init
-    (progn
-      (spacemacs/add-to-hook 'rust-mode-hook '(spacemacs//rust-setup-backend))
-      (spacemacs/declare-prefix-for-mode 'rust-mode "mg" "goto")
-      (spacemacs/declare-prefix-for-mode 'rust-mode "mh" "help")
-      (spacemacs/declare-prefix-for-mode 'rust-mode "m=" "format")
-      (spacemacs/set-leader-keys-for-major-mode 'rust-mode
-        "==" 'rust-format-buffer
-        "q" 'spacemacs/rust-quick-run))))
+    (add-hook 'rustic-mode-hook #'spacemacs//rust-setup-backend)
+
+    (spacemacs/declare-prefix-for-mode 'rustic-mode "mc" "cargo")
+    (spacemacs/declare-prefix-for-mode 'rustic-mode "mt" "tests")
+    (spacemacs/declare-prefix-for-mode 'rustic-mode "mg" "goto")
+    (spacemacs/declare-prefix-for-mode 'rustic-mode "mh" "help")
+    (spacemacs/declare-prefix-for-mode 'rustic-mode "m=" "format")
+    (spacemacs/set-leader-keys-for-major-mode 'rustic-mode
+      "c." 'rustic-cargo-run-rerun
+      "c=" 'rustic-cargo-fmt
+      "ca" 'rustic-cargo-add
+      "cc" 'rustic-cargo-build
+      "cC" 'rustic-cargo-clean
+      "cd" 'rustic-cargo-doc
+      "cs" 'rustic-doc-search
+      "ce" 'rustic-cargo-bench
+      "ci" 'rustic-cargo-init
+      "cl" 'rustic-cargo-clippy
+      "cf" 'rustic-cargo-clippy-fix
+      "cn" 'rustic-cargo-new
+      "co" 'rustic-cargo-outdated
+      "cr" 'rustic-cargo-rm
+      "cu" 'rustic-cargo-update
+      "cU" 'rustic-cargo-upgrade
+      "cv" 'rustic-cargo-check
+      "cx" 'rustic-cargo-run
+      "ta" 'rustic-cargo-test-run
+      "tt" 'rustic-cargo-current-test)
+
+    (with-eval-after-load 'flycheck
+      (push 'rustic-clippy flycheck-checkers))
+
+    (with-eval-after-load 'lsp-mode
+      (spacemacs/set-leader-keys-for-major-mode 'rustic-mode
+        "=j" 'lsp-rust-analyzer-join-lines
+        "==" 'lsp-format-buffer
+        "Ti" 'lsp-inlay-hints-mode
+        "bD" 'lsp-rust-analyzer-status
+        "bS" 'lsp-rust-switch-server
+        "gp" 'lsp-rust-find-parent-module
+        "gg" 'lsp-find-definition
+        "hm" 'lsp-rust-analyzer-expand-macro
+        "hs" 'lsp-rust-analyzer-syntax-tree
+        "v" 'lsp-extend-selection
+
+        "," 'lsp-rust-analyzer-rerun
+        "."  'lsp-rust-analyzer-run))))
 
 (defun rust/post-init-smartparens ()
   (with-eval-after-load 'smartparens
     ;; Don't pair lifetime specifiers
-    (sp-local-pair 'rust-mode "'" nil :actions nil)))
-
-(defun rust/init-toml-mode ()
-  (use-package toml-mode
-    :mode "/\\(Cargo.lock\\|\\.cargo/config\\)\\'"))
+    (sp-local-pair 'rustic-mode "'" nil :actions nil)))
 
 (defun rust/init-ron-mode ()
   (use-package ron-mode

@@ -4,17 +4,17 @@
 ;; Description: Non-interactive frame and window functions.
 ;; Author: Drew Adams
 ;; Maintainer: Drew Adams (concat "drew.adams" "@" "oracle" ".com")
-;; Copyright (C) 1996-2015, Drew Adams, all rights reserved.
+;; Copyright (C) 1996-2018, Drew Adams, all rights reserved.
 ;; Created: Tue Mar  5 16:15:50 1996
 ;; Version: 0
 ;; Package-Requires: ()
-;; Last-Updated: Thu Jan  1 10:45:03 2015 (-0800)
+;; Last-Updated: Fri Aug 15 12:03:30 2025 (-0700)
 ;;           By: dradams
-;;     Update #: 227
-;; URL: http://www.emacswiki.org/frame-fns.el
-;; Doc URL: http://emacswiki.org/FrameModes
+;;     Update #: 238
+;; URL: https://www.emacswiki.org/emacs/download/frame-fns.el
+;; Doc URL: https://emacswiki.org/emacs/FrameModes
 ;; Keywords: internal, extensions, local, frames
-;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x, 24.x, 25.x
+;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x, 24.x, 25.x, 26.x
 ;;
 ;; Features that might be required by this library:
 ;;
@@ -38,6 +38,10 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2025/08/15 dadams
+;;     get-a-frame: Typo in error msg.
+;; 2017/10/22 dadams
+;;     frames-on: Removed (unused) second arg.
 ;; 2011/01/04 dadams
 ;;     Removed autoload cookies from non-interactive functions.
 ;; 2010/01/12 dadams
@@ -237,12 +241,12 @@ If FRAME is a frame, it is returned."
   (cond ((framep frame) frame)
         ((stringp frame)
          (catch 'get-a-frame-found
-           (dolist (fr (frame-list))
+           (dolist (fr  (frame-list))
              (when (string= frame (get-frame-name fr))
                (throw 'get-a-frame-found fr)))
            nil))
         (t (error
-            "Function `get-frame-name': Arg neither a string nor a frame: `%s'"
+            "Function `get-a-frame': Arg neither a string nor a frame: `%s'"
             frame))))
 
 (defun read-frame (prompt &optional default existing)
@@ -265,10 +269,9 @@ existing frames."
                    ;; `frame-name-history' is defined in `frame.el'.
                    nil existing nil '(frame-name-history . 2) default))
 
-(defun frames-on (buffer &optional frame)
-  "List of all live frames showing BUFFER (a buffer or its name).
-The optional FRAME argument is as for function `get-buffer-window'."
-  (filtered-frame-list (function (lambda (fr) (get-buffer-window buffer fr)))))
+(defun frames-on (buffer)
+  "List of all live frames showing BUFFER (a buffer or its name)."
+  (filtered-frame-list (lambda (fr) (get-buffer-window buffer fr))))
 
 (defun 1-window-frames-on (buffer)
   "List of all visible 1-window frames showing BUFFER."
@@ -277,7 +280,6 @@ The optional FRAME argument is as for function `get-buffer-window'."
     (let ((frs  ()))
       (with-current-buffer buffer
         (when (buffer-live-p buffer)    ; Do nothing if dead buffer.
-          ;; $$$$$$ Is it better to search through frames-on or windows-on?
           (dolist (fr  (frames-on buffer))
             (save-window-excursion (select-frame fr)
                                    (when (one-window-p t fr) (push fr frs))))))
@@ -290,7 +292,6 @@ The optional FRAME argument is as for function `get-buffer-window'."
     (let ((frs  ()))
       (with-current-buffer buffer
         (when (buffer-live-p buffer)    ; Do nothing if dead buffer.
-          ;; $$$$$$ Is it better to search through frames-on or windows-on?
           (dolist (fr  (frames-on buffer))
             (save-window-excursion (select-frame fr)
                                    (unless (one-window-p t fr)

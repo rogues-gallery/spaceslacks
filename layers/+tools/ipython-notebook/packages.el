@@ -1,15 +1,27 @@
-;;; packages.el --- ipython Layer packages File for Spacemacs
+;;; packages.el --- ipython Layer packages File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(setq ipython-notebook-packages '(ein))
+
+(setq ipython-notebook-packages '(ein company))
 
 (defun ipython-notebook/init-ein ()
   (use-package ein
@@ -27,8 +39,8 @@
       (mapc
        (lambda (mode)
          (evil-define-minor-mode-key mode 'ein:notebook-mode
-           (kbd "<C-return>") 'ein:worksheet-execute-cell-km
-           (kbd "<S-return>") 'ein:worksheet-execute-cell-and-goto-next-km))
+           (kbd "C-<return>") 'ein:worksheet-execute-cell-km
+           (kbd "S-<return>") 'ein:worksheet-execute-cell-and-goto-next-km))
        '(insert hybrid normal))
       (evil-define-minor-mode-key 'normal 'ein:notebook-mode
         "gj" 'ein:worksheet-goto-next-input-km
@@ -72,6 +84,9 @@
                       bindings
                       `(:doc ,(ipython-notebook/transient-doc bindings))))))))
 
+(defun ipython-notebook/post-init-company ()
+  (add-hook 'ein:notebook-mode-hook #'spacemacs//ein-setup-company))
+
 (defun ipython-notebook/max-by-prefix (alist)
   (seq-reduce (lambda (lst1 lst2) (if (> (cl-second lst1)
                                          (cl-second lst2))
@@ -93,7 +108,7 @@
     (cl-flet ((get-prefix
                (command)
                (intern (mapconcat #'identity
-                                  (subseq (split-string command (regexp-quote "-"))
+                                  (cl-subseq (split-string command (regexp-quote "-"))
                                           0 (1+ upto))
                                   "-"))))
       (mapc (lambda (command)
@@ -134,7 +149,7 @@ For example, return 2 if COMMANDS are '(ein:notebook-foo ein:notebook-foo-bar)."
          (max-col 3)
          (spread (min max-col (ceiling (/ n-main (* 1.3 n-other)))))
          (main-commands (cdr (assq main commands-by)))
-         (other-commands (cl-mapcan #'cdr (remove-if (lambda (lst)
+         (other-commands (cl-mapcan #'cdr (cl-remove-if (lambda (lst)
                                                        (eq (car lst) main))
                                                      commands-by)))
          (other-from (ipython-notebook/prefix other-commands))
@@ -145,20 +160,20 @@ For example, return 2 if COMMANDS are '(ein:notebook-foo ein:notebook-foo-bar)."
               (massage (command from to)
                        (let ((toks (split-string (symbol-name command) (regexp-quote "-"))))
                          (mapconcat #'identity
-                                    (subseq toks from (+ (length toks) to))
+                                    (cl-subseq toks from (+ (length toks) to))
                                     "-"))))
       (cl-macrolet ((rescol
                      (result commands from to)
                      `(let* ((key-width 10)
                              (col-width 20)
                              (format-str (format "%%-%ds%%-%ds" key-width col-width)))
-                        (if-let ((command (pop ,commands)))
+                        (if-let* ((command (pop ,commands)))
                             (let ((massaged (massage command ,from ,to)))
                               (setq ,result
                                     (concat ,result
                                             (format format-str
                                                     (format "[_%s_]^^" (get-key command))
-                                                    (subseq massaged 0
+                                                    (cl-subseq massaged 0
                                                             (min (length massaged) col-width))))))
                           (setq ,result (concat ,result (format format-str "" "")))))))
         (cl-loop

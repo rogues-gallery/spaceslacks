@@ -1,13 +1,25 @@
 ;;; funcs.el --- Ivy Layer functions File for Spacemacs -*- lexical-binding: t; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 
 ;; Counsel
@@ -135,7 +147,7 @@ When INITIAL-INPUT is non-nil, use it in the minibuffer during completion."
 (defun spacemacs//counsel-edit ()
   "Edit the current search results in a buffer using wgrep."
   (interactive)
-  (run-with-idle-timer 0 nil 'spacemacs/ivy-wgrep-change-to-wgrep-mode)
+  (run-with-idle-timer 0 nil 'spacemacs/grep-change-to-wgrep-mode)
   (ivy-occur))
 
 (defun spacemacs//gne-init-counsel ()
@@ -184,10 +196,11 @@ that directory."
   (interactive)
   (require 'counsel)
   (cl-letf* ((initial-input (if use-initial-input
-                                (if (region-active-p)
-                                    (buffer-substring-no-properties
-                                     (region-beginning) (region-end))
-                                  (thing-at-point 'symbol t))
+                                (rxt-quote-pcre
+                                 (if (region-active-p)
+                                     (buffer-substring-no-properties
+                                      (region-beginning) (region-end))
+                                   (or (thing-at-point 'symbol t) "")))
                               ""))
              (tool (catch 'tool
                      (dolist (tool tools)
@@ -233,7 +246,6 @@ that directory."
  for (tools tool-name) in '((dotspacemacs-search-tools "auto")
                             ((list "rg") "rg")
                             ((list "ag") "ag")
-                            ((list "pt") "pt")
                             ((list "ack") "ack")
                             ((list "grep") "grep"))
  do
@@ -330,37 +342,28 @@ that directory."
   (ignore-errors
     (call-interactively 'counsel-up-directory)))
 
-(when (configuration-layer/package-used-p 'counsel)
-  (with-eval-after-load 'counsel
-    (defun spacemacs/describe-mode ()
-      "Dummy wrapper to prevent an key binding error from helm.
-
-By default the emacs leader is M-m, turns out that Helm does this:
-   (cl-dolist (k (where-is-internal 'describe-mode global-map))
-        (define-key map k 'helm-help))
-after doing this:
-   (define-key map (kbd \"M-m\") 'helm-toggle-all-marks)
-So when Helm is loaded we get the error:
-   Key sequence M-m h d m starts with non-prefix key M-m
-
-To prevent this error we just wrap `describe-mode' to defeat the
- Helm hack."
-      (interactive)
-      (call-interactively 'describe-mode))))
-
 (defun spacemacs//counsel-with-git-grep (func x)
+  "This function should be kept in sync with `counsel-git-grep-action'.
+
+We copy exactly that function and modify it a bit which allows us
+to programmatically add extra actions to counsel git-grep based
+commands."
   (when (string-match "\\`\\(.*?\\):\\([0-9]+\\):\\(.*\\)\\'" x)
-    (with-ivy-window
-      (let ((file-name (match-string-no-properties 1 x))
-            (line-number (match-string-no-properties 2 x)))
-        (funcall func
-                 (expand-file-name file-name (ivy-state-directory ivy-last)))
-        (goto-char (point-min))
-        (forward-line (1- (string-to-number line-number)))
-        (re-search-forward (ivy--regex ivy-text t) (line-end-position) t)
-        (unless (eq ivy-exit 'done)
-          (swiper--cleanup)
-          (swiper--add-overlays (ivy--regex ivy-text)))))))
+    (let ((file-name (match-string-no-properties 1 x))
+          (line-number (match-string-no-properties 2 x)))
+      ;; this line is the difference to `counsel-git-grep-action'
+      (funcall func
+               (expand-file-name file-name (ivy-state-directory ivy-last)))
+      (goto-char (point-min))
+      (forward-line (1- (string-to-number line-number)))
+      (when (re-search-forward (ivy--regex ivy-text t) (line-end-position) t)
+        (when swiper-goto-start-of-match
+          (goto-char (match-beginning 0))))
+      (swiper--ensure-visible)
+      (run-hooks 'counsel-grep-post-action-hook)
+      (unless (eq ivy-exit 'done)
+        (swiper--cleanup)
+        (swiper--add-overlays (ivy--regex ivy-text))))))
 
 ;;; org
 
@@ -429,11 +432,6 @@ To prevent this error we just wrap `describe-mode' to defeat the
                         (require (car repl))
                         (call-interactively (cdr repl))))))
 
-(defun spacemacs/ivy-wgrep-change-to-wgrep-mode ()
-  (interactive)
-  (ivy-wgrep-change-to-wgrep-mode)
-  (evil-normal-state))
-
 ;;; Evil
 
 (defun spacemacs/ivy-evil-registers ()
@@ -496,3 +494,10 @@ Closing doesn't kill buffers inside the layout while killing layouts does."
                     (spacemacs//current-layout-name))
             (persp-names)
             :action 'persp-kill))
+
+(defun spacemacs/ivy-xref-open-in-other-window (candidate)
+  "Open candidate in other window."
+  (let* ((marker (xref-location-marker (cdr candidate)))
+         (buf (marker-buffer marker)))
+    (select-window
+     (xref--show-pos-in-buf marker (switch-to-buffer-other-window buf)))))

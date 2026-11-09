@@ -1,13 +1,25 @@
-;;; core-hooks.el --- Spacemacs Core File
+;;; core-hooks.el --- Spacemacs Core File -*- lexical-binding: t -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 
 (defun spacemacs/run-prog-mode-hooks ()
@@ -26,10 +38,6 @@
   (dolist (hook hooks)
     (add-hook hook fun append local)))
 
-(defun spacemacs/add-all-to-hook (hook &rest funs)
-  "Add functions to hook."
-  (spacemacs/add-to-hook hook funs))
-
 (defun spacemacs/add-to-hook (hook funs)
   "Add list of functions to hook."
   (dolist (fun funs)
@@ -42,6 +50,8 @@
 Transient hooks are ephemeral hooks that vanishes when executed.
 If FUNC is a lambda you must give it a name with FNAME. "
   (declare (indent 1))
+  (unless (or (symbolp func) fname)
+    (error "spacemacs|add-transient-hook: No name provided for transient hook"))
   (let ((hfunc (intern (format "spacemacs//transient-hook-%s"
                                (if fname fname func))))
         result)

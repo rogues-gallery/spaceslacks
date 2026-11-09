@@ -1,56 +1,76 @@
-;;; funcs.el --- Auctex Layer Functions File for Spacemacs
+;;; funcs.el --- Auctex Layer Functions File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(defun spacemacs//latex-backend ()
-  "Returns selected backend."
-  (if latex-backend
-      latex-backend
-    (cond
-     ((configuration-layer/layer-used-p 'lsp) 'lsp)
-     (t 'company-auctex))))
 
 (defun spacemacs//latex-setup-company ()
   "Conditionally setup company based on backend."
-  (pcase (spacemacs//latex-backend)
-    ;; Activate lsp company explicitly to activate
-    ;; standard backends as well
-    (`lsp (spacemacs|add-company-backends
-            :backends company-capf
-            :modes LaTeX-mode))
-    (_    (when (configuration-layer/package-used-p 'company-auctex)
-            (spacemacs|add-company-backends
-              :backends
-              (company-auctex-macros)
-              company-auctex-symbols
-              company-auctex-environments
-              :modes LaTeX-mode))
-          (when (configuration-layer/package-used-p 'company-reftex)
-            (spacemacs|add-company-backends
-              :backends
-              company-reftex-labels
-              company-reftex-citations
-              :modes LaTeX-mode)))))
+  ;; Always activate auctex and reftex backends so that they're
+  ;; accessible via company-other-backend even when using lsp.
+  (when (configuration-layer/package-used-p 'company-auctex)
+    (if (configuration-layer/package-used-p 'company-math)
+        (spacemacs|add-company-backends
+          :backends (company-math-symbols-unicode
+                     company-math-symbols-latex
+                     company-auctex-macros
+                     company-auctex-symbols
+                     company-auctex-environments)
+          :modes LaTeX-mode)
+      (spacemacs|add-company-backends
+        :backends (company-auctex-macros
+                   company-auctex-symbols
+                   company-auctex-environments)
+        :modes LaTeX-mode)))
+  (when (configuration-layer/package-used-p 'company-reftex)
+    (spacemacs|add-company-backends
+      :backends company-reftex-labels
+      company-reftex-citations
+      :modes LaTeX-mode))
+  (when (eq latex-backend 'lsp)
+    (spacemacs|add-company-backends
+      :backends company-capf
+      :modes LaTeX-mode)))
 
 (defun spacemacs//latex-setup-backend ()
   "Conditionally setup latex backend."
-  (pcase (spacemacs//latex-backend)
-    (`lsp (require 'lsp-latex)
-          (lsp))))
+  (when (eq latex-backend 'lsp)
+    (require 'lsp-latex)
+    (lsp-deferred)))
+
+(defun spacemacs//latex-setup-pdf-tools ()
+  "Conditionally setup pdf-tools."
+  (when latex-view-with-pdf-tools
+    (if (configuration-layer/layer-used-p 'pdf)
+        (progn
+          (setf (alist-get 'output-pdf TeX-view-program-selection) '("PDF Tools"))
+          (when latex-view-pdf-in-split-window
+            (setq pdf-sync-forward-display-action
+                  '(nil . ((inhibit-same-window . t))))))
+      (spacemacs-buffer/warning "Latex Layer: latex-view-with-pdf-tools is non-nil but pdf layer is not installed, this setting will have no effect."))))
 
 (defun latex/build ()
   (interactive)
-  (progn
-    (let ((TeX-save-query nil))
-      (TeX-save-document (TeX-master-file)))
-    (TeX-command latex-build-command 'TeX-master-file -1)))
+  (let ((TeX-save-query nil))
+    (TeX-save-document (TeX-master-file)))
+  (TeX-command latex-build-command 'TeX-master-file -1))
 ;; (setq build-proc (TeX-command latex-build-command 'TeX-master-file -1))
 ;; ;; Sometimes, TeX-command returns nil causing an error in set-process-sentinel
 ;; (when build-proc

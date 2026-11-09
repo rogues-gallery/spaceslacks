@@ -1,13 +1,25 @@
-;;; funcs.el --- Spacemacs editing Layer functions File
+;;; funcs.el --- Spacemacs editing Layer functions File  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 
 ;; smartparens
@@ -60,17 +72,50 @@ or `sp-local-pair'."
      (t
       (insert-char ?\))))))
 
+(defun spacemacs//activate-smartparens(&optional global)
+  "Enable `smartparens-mode' or strict version.
+This either activates `smartparens-mode' or `smartparens-strict-mode'
+depending on the respective dotfile setting.
+
+It is not necessary to activate `smartparens-mode' independently as it
+is included in `smartparens-strict-mode'.
+
+If `global' is non-nil activate the respective global mode."
+  (if dotspacemacs-smartparens-strict-mode
+      (if global
+          (smartparens-global-strict-mode 1)
+        (smartparens-strict-mode 1))
+    (if global
+        (smartparens-global-mode 1)
+      (smartparens-mode 1))))
+
+(defun spacemacs//deactivate-smartparens(&optional global)
+  "Deactivate `smartparens-mode'.
+This deactivates `smartparens-mode' and `smartparens-strict-mode'.
+
+It is important to disable both to remove all advices.
+
+If `global' is non-nil activate the respective global mode."
+  (if global
+      (progn
+        (when smartparens-global-strict-mode
+          (smartparens-global-strict-mode -1))
+        (smartparens-global-mode -1))
+    (when smartparens-strict-mode
+      (smartparens-strict-mode -1))
+    (smartparens-mode -1)))
+
 (defun spacemacs//conditionally-enable-smartparens-mode ()
   "Enable `smartparens-mode' in the minibuffer, during `eval-expression'."
   (if (or (eq this-command 'eval-expression)
           (eq this-command 'eldoc-eval-expression))
-      (smartparens-mode)))
+      (spacemacs//activate-smartparens)))
 
 (defun spacemacs//adaptive-smartparent-pair-overlay-face ()
   (set-face-attribute 'sp-pair-overlay-face nil
                       :inherit 'lazy-highlight
-                      :background nil
-                      :foreground nil))
+                      :background 'unspecified
+                      :foreground 'unspecified))
 
 (defun spacemacs//put-clean-aindent-last ()
   "Put `clean-aindent--check-last-point` to end of `post-command-hook`.
@@ -103,3 +148,43 @@ See issues #6520 and #13172"
     (if arg
         (insert-uuid-cid uuid)
       (insert uuid))))
+
+
+;;; wgrep
+
+(defun spacemacs//grep-set-evil-state ()
+  "Set the evil state for the read-only grep buffer given the current editing style."
+  (if (eq dotspacemacs-editing-style 'emacs)
+      (evil-emacs-state)
+    (evil-motion-state)))
+
+(defun spacemacs/wgrep-finish-edit ()
+  "Set back the default evil state when finishing editing."
+  (interactive)
+  (wgrep-finish-edit)
+  (spacemacs//grep-set-evil-state))
+
+(defun spacemacs/wgrep-abort-changes ()
+  "Set back the default evil state when aborting editing."
+  (interactive)
+  (wgrep-abort-changes)
+  (spacemacs//grep-set-evil-state))
+
+(defun spacemacs/wgrep-abort-changes-and-quit ()
+  "Abort changes and quit."
+  (interactive)
+  (spacemacs/wgrep-abort-changes)
+  (quit-window))
+
+(defun spacemacs/wgrep-save-changes-and-quit ()
+  "Save changes and quit."
+  (interactive)
+  (spacemacs/wgrep-finish-edit)
+  (wgrep-save-all-buffers)
+  (quit-window))
+
+(defun spacemacs/grep-change-to-wgrep-mode ()
+  (interactive)
+  (require 'wgrep)
+  (wgrep-change-to-wgrep-mode)
+  (evil-normal-state))

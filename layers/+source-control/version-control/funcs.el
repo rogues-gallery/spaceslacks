@@ -1,13 +1,25 @@
-;;; funcs.el --- Version control functions File
+;;; funcs.el --- Version control functions File  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defun spacemacs/diff-mode-revert-hunk ()
   (interactive)
@@ -19,8 +31,7 @@
     (call-interactively
      (cl-case version-control-diff-tool
        (diff-hl     'diff-hl-next-hunk)
-       (git-gutter  'git-gutter:next-hunk)
-       (git-gutter+ 'git-gutter+-next-hunk)))))
+       (git-gutter  'git-gutter:next-hunk)))))
 
 (defun spacemacs/vcs-previous-hunk ()
   (interactive)
@@ -28,8 +39,7 @@
     (call-interactively
      (cl-case version-control-diff-tool
        (diff-hl     'diff-hl-previous-hunk)
-       (git-gutter  'git-gutter:previous-hunk)
-       (git-gutter+ 'git-gutter+-previous-hunk)))))
+       (git-gutter  'git-gutter:previous-hunk)))))
 
 (defun spacemacs/vcs-revert-hunk ()
   (interactive)
@@ -38,8 +48,7 @@
     (call-interactively
      (cl-case version-control-diff-tool
        (diff-hl     'diff-hl-revert-hunk)
-       (git-gutter  'git-gutter:revert-hunk)
-       (git-gutter+ 'git-gutter+-revert-hunks)))))
+       (git-gutter  'git-gutter:revert-hunk)))))
 
 (defun spacemacs/vcs-stage-hunk ()
   (interactive)
@@ -48,8 +57,7 @@
     (let ((current-prefix-arg t))
       (call-interactively
        (cl-case version-control-diff-tool
-         (git-gutter  'git-gutter:stage-hunk)
-         (git-gutter+ 'git-gutter+-stage-hunks))))))
+         (git-gutter  'git-gutter:stage-hunk))))))
 
 (defun spacemacs/vcs-show-hunk ()
   (interactive)
@@ -57,44 +65,41 @@
     (call-interactively
      (cl-case version-control-diff-tool
        (diff-hl     'diff-hl-diff-goto-hunk)
-       (git-gutter  'git-gutter:popup-hunk)
-       (git-gutter+ 'git-gutter+-show-hunk-inline-at-point)))))
+       (git-gutter  'git-gutter:popup-hunk)))))
 
 (defun spacemacs/vcs-enable-margin ()
   (interactive)
   (let ((current-prefix-arg t))
-    (call-interactively
-     (cl-case version-control-diff-tool
-       (diff-hl     'diff-hl-mode)
-       (git-gutter  'git-gutter-mode)
-       (git-gutter+ 'git-gutter+-mode)))))
+    (cl-case version-control-diff-tool
+      (diff-hl
+       (diff-hl-margin-local-mode)
+       (diff-hl-update))
+      (git-gutter  (call-interactively 'git-gutter-mode)))))
 
 (defun spacemacs/vcs-disable-margin ()
   (interactive)
   (let ((current-prefix-arg nil))
-    (call-interactively
-     (cl-case version-control-diff-tool
-       (diff-hl     'diff-hl-mode)
-       (git-gutter  'git-gutter-mode)
-       (git-gutter+ 'git-gutter+-mode)))))
+    (cl-case version-control-diff-tool
+      (diff-hl
+       (diff-hl-margin-local-mode -1)
+       (diff-hl-update))
+      (git-gutter  (call-interactively 'git-gutter-mode)))))
 
 (defun spacemacs/vcs-enable-margin-globally ()
   (interactive)
   (let ((current-prefix-arg t))
     (call-interactively
      (cl-case version-control-diff-tool
-       (diff-hl     'global-diff-hl-mode)
-       (git-gutter  'global-git-gutter-mode)
-       (git-gutter+ 'global-git-gutter+-mode)))))
+       (diff-hl     'diff-hl-margin-mode)
+       (git-gutter  'global-git-gutter-mode)))))
 
 (defun spacemacs/vcs-disable-margin-globally ()
   (interactive)
   (let ((current-prefix-arg nil))
     (call-interactively
      (cl-case version-control-diff-tool
-       (diff-hl     'global-diff-hl-mode)
-       (git-gutter  'global-git-gutter-mode)
-       (git-gutter+ 'global-git-gutter+-mode)))))
+       (diff-hl     'diff-hl-margin-mode)
+       (git-gutter  'global-git-gutter-mode)))))
 
 (defun spacemacs/vcs-show-help ()
   (interactive)
@@ -104,16 +109,14 @@
 (defun spacemacs/vcs-margin-p ()
   (interactive)
   (cl-case version-control-diff-tool
-    (diff-hl     diff-hl-mode)
-    (git-gutter  (bound-and-true-p git-gutter-mode))
-    (git-gutter+ (bound-and-true-p git-gutter+-mode))))
+    (diff-hl     (bound-and-true-p diff-hl-margin-local-mode))
+    (git-gutter  (bound-and-true-p git-gutter-mode))))
 
 (defun spacemacs/vcs-margin-global-p ()
   (interactive)
   (cl-case version-control-diff-tool
-    (diff-hl     global-diff-hl-mode)
-    (git-gutter  global-git-gutter-mode)
-    (git-gutter+ global-git-gutter+-mode)))
+    (diff-hl     diff-hl-margin-mode)
+    (git-gutter  global-git-gutter-mode)))
 
 (spacemacs|add-toggle version-control-margin
   :status (spacemacs/vcs-margin-p)
@@ -152,6 +155,3 @@ the number of conflicts detected by `smerge-mode'."
   (interactive)
   (setq spacemacs--smerge-ts-full-hint-toggle
         (not spacemacs--smerge-ts-full-hint-toggle)))
-
-(defun spacemacs//git-gutter+-refresh-in-all-buffers ()
-  (git-gutter+-in-all-buffers (when git-gutter+-mode (git-gutter+-refresh))))

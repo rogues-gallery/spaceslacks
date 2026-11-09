@@ -1,13 +1,25 @@
-;;; core-custom-settings.el --- Spacemacs Core File
+;;; core-custom-settings.el --- Spacemacs Core File -*- lexical-binding: t -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 (require 'core-dotspacemacs)
 
 (defvar spacemacs--custom-file (concat spacemacs-cache-directory
@@ -15,7 +27,7 @@
 
 (defun spacemacs/initialize-custom-file ()
   "Initialize the custom file.
-Does not initialize writing the custom file into the dotfile. To
+Does not initialize writing the custom file into the dotfile.  To
 complete that part see `spacemacs/initialize-custom-file-sync'."
   ;; setup auto-rewrite of custom settings only if custom-file
   ;; has not been set by the user
@@ -72,36 +84,40 @@ end of the buffer.
           (goto-char (point-max))
           (search-backward "\n\^L" (max (- (point-max) 3000) (point-min))
                            'move)
-          (when (search-forward "Local Variables:" nil t)
+          ;; emacs would print the warning
+          ;;   "Local variables list is not properly terminated"
+          ;; (a false positive) when reading this source file
+          ;; if we had not obfuscated the string literal
+          ;; in the next line using an ignored space ("\ ").
+          (when (search-forward "Local\  Variables:" nil t)
             (setq pos (line-beginning-position))))
         (goto-char pos)))))
 
-(defun spacemacs//get-custom-settings-from-cache ()
-  "Returns the custom settings from `spacemacs--custom-file'."
-  (with-current-buffer (let ((find-file-visit-truename t)
-                             (delay-mode-hooks t))
-                         (find-file-noselect spacemacs--custom-file))
-    (goto-char (point-min))
+(defun spacemacs/write-custom-settings-to-dotfile ()
+  "Write `dotspacemacs/emacs-custom-settings' function in the dotfile."
+  (message "Writing Emacs custom settings to dotfile...")
+  (with-temp-buffer
+    (insert-file-contents spacemacs--custom-file)
+    (delay-mode-hooks (emacs-lisp-mode))
     ;; Skip all whitespace and comments.
     (while (forward-comment 1))
-    (buffer-substring-no-properties (point) (point-max))))
-
-(defun spacemacs/write-custom-settings-to-dotfile ()
-  "Write `dotspacemacs/emacs-custom-settings' function in the dotfile"
-  (message "Writing Emacs custom settings to dotfile...")
-  (with-current-buffer (let ((find-file-visit-truename t)
-                             (delay-mode-hooks t))
-                         (find-file-noselect (dotspacemacs/location)))
-    (spacemacs//delete-emacs-custom-settings)
-    (let ((standard-output (current-buffer)))
-      (princ "(defun dotspacemacs/emacs-custom-settings ()\n")
-      (princ "  \"Emacs custom settings.
+    (delete-region (point-min) (point))
+    ;; the temp buffer now contains the settings to be written to the dotfile
+    (let ((settings-buffer (current-buffer)))
+      (with-current-buffer (let ((find-file-visit-truename t)
+                                 (delay-mode-hooks t))
+                             (find-file-noselect (dotspacemacs/location)))
+        (spacemacs//delete-emacs-custom-settings)
+        (save-excursion
+          (insert "(defun dotspacemacs/emacs-custom-settings ()\n")
+          (insert "  \"Emacs custom settings.
 This is an auto-generated function, do not modify its content directly, use
 Emacs customize menu instead.
 This function is called at the very end of Spacemacs initialization.\"\n")
-      (princ (spacemacs//get-custom-settings-from-cache))
-      (princ ")")
-      (save-buffer)
-      (kill-buffer (current-buffer)))))
+          (insert-buffer-substring settings-buffer)
+          (insert ")"))
+        (indent-sexp)
+        (save-buffer))))
+  (message "Writing Emacs custom settings to dotfile...done"))
 
 (provide 'core-custom-settings)

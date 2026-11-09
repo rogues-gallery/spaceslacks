@@ -1,13 +1,25 @@
-;;; packages.el --- kotlin layer packages file for Spacemacs.
+;;; packages.el --- kotlin layer packages file for Spacemacs.  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Shanavas M <shanavas@disroot.org>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defconst kotlin-packages
   '(
@@ -15,8 +27,6 @@
     flycheck
     (flycheck-kotlin :requires flycheck)
     ggtags
-    counsel-gtags
-    helm-gtags
     kotlin-mode))
 
 (defun kotlin/post-init-company ()
@@ -34,15 +44,8 @@
   (use-package kotlin-mode
     :defer t
     :init
-    (progn
-      (setq lsp-clients-kotlin-server-executable kotlin-lsp-jar-path)
-      (add-hook 'kotlin-mode-hook #'spacemacs//kotlin-setup-backend))))
+    (setq lsp-clients-kotlin-server-executable kotlin-lsp-jar-path)
+    (add-hook 'kotlin-mode-hook #'spacemacs//kotlin-setup-backend)))
 
 (defun kotlin/post-init-ggtags ()
   (add-hook 'kotlin-mode-local-vars-hook #'spacemacs/ggtags-mode-enable))
-
-(defun kotlin/post-init-helm-gtags ()
-  (spacemacs/helm-gtags-define-keys-for-mode 'kotlin-mode))
-
-(defun kotlin/post-init-counsel-gtags ()
-  (spacemacs/counsel-gtags-define-keys-for-mode 'kotlin-mode))

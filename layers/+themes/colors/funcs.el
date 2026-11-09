@@ -1,13 +1,25 @@
-;;; funcs.el --- Colors Layer functions File
+;;; funcs.el --- Colors Layer functions File  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 
 ;; rainbow-identifiers
@@ -20,16 +32,16 @@
 (defun colors//rainbow-identifiers-ignore-keywords ()
   "Do not colorize stuff with ‘font-lock-keyword-face’."
   (setq-local rainbow-identifiers-faces-to-override
-              (delq 'font-lock-keyword-face
+              (remq 'font-lock-keyword-face
                     rainbow-identifiers-faces-to-override)))
 
-(defun colors//tweak-theme-colors (theme)
+(defun colors//tweak-theme-colors ()
   "Tweak color themes by adjusting rainbow-identifiers."
-  (interactive)
   ;; tweak the saturation and lightness of identifier colors
-  (when (not (assq theme (get 'rainbow-identifiers-cie-l*a*b*-saturation
-                              'theme-value)))
-    (let ((sat&light (assq theme colors-theme-identifiers-sat&light)))
+  (unless (assq spacemacs--cur-theme
+                (get 'rainbow-identifiers-cie-l*a*b*-saturation
+                     'theme-value))
+    (let ((sat&light (assq spacemacs--cur-theme colors-theme-identifiers-sat&light)))
       (if sat&light
           (setq rainbow-identifiers-cie-l*a*b*-saturation (cadr sat&light)
                 rainbow-identifiers-cie-l*a*b*-lightness (caddr sat&light))
@@ -73,12 +85,6 @@ Press any other key to exit." component (eval var) component component)))
      (define-key map (kbd "=") reset-func)
      map) t)
   (colors//change-color-mini-mode-doc component))
-
-(defun colors/init-rainbow-mode ()
-  (use-package rainbow-mode
-    :commands rainbow-mode
-    :init (spacemacs/set-leader-keys "tCc" 'rainbow-mode)
-    :config (spacemacs|hide-lighter rainbow-mode)))
 
 (defun colors/start-change-color-saturation ()
   "Initiate the overlay map to change the saturation."
@@ -156,4 +162,4 @@ Example usage:
   "Refresh and re-apply the look of your current theme.
 Always run this after adding new per-theme settings!"
   (interactive)
-  (colors//tweak-theme-colors spacemacs--cur-theme))
+  (colors//tweak-theme-colors))

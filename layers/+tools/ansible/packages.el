@@ -1,13 +1,25 @@
-;;; packages.el --- Ansible Layer packages File for Spacemacs
+;;; packages.el --- Ansible Layer packages File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Brian Hicks <brian@brianthicks.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 (setq ansible-packages
       '(ansible
         ansible-doc
@@ -21,34 +33,29 @@
     :defer t
     :commands ansible-auto-decrypt-encrypt
     :init
-    (progn
-      (add-hook 'yaml-mode-hook 'spacemacs/ansible-maybe-enable)
-      (put 'ansible-vault-password-file 'safe-local-variable #'stringp)
-      (if ansible-auto-encrypt-decrypt
-          ;; add this hook to local-vars-hook to allow users to specify
-          ;; a password file in directory local variables
-          (add-hook 'yaml-mode-local-vars-hook
-                    'spacemacs/ansible-auto-decrypt-encrypt-vault)
-        (remove-hook 'yaml-mode-local-vars-hook
-                     'spacemacs/ansible-auto-decrypt-encrypt-vault))
-      )
+    (add-hook 'yaml-mode-hook 'spacemacs/ansible-maybe-enable)
+    (put 'ansible-vault-password-file 'safe-local-variable #'stringp)
+    (if ansible-auto-encrypt-decrypt
+        ;; add this hook to local-vars-hook to allow users to specify
+        ;; a password file in directory local variables
+        (add-hook 'yaml-mode-local-vars-hook
+                  'spacemacs/ansible-auto-decrypt-encrypt-vault)
+      (remove-hook 'yaml-mode-local-vars-hook
+                   'spacemacs/ansible-auto-decrypt-encrypt-vault))
     :config
-    (progn
-      (spacemacs/set-leader-keys-for-minor-mode 'ansible
-       "bd" 'ansible-decrypt-buffer
-       "be" 'ansible-encrypt-buffer))))
+    (spacemacs/set-leader-keys-for-minor-mode 'ansible
+      "bd" 'ansible-decrypt-buffer
+      "be" 'ansible-encrypt-buffer)))
 
 (defun ansible/init-ansible-doc ()
   (use-package ansible-doc
     :defer t
     :init
-    (progn
-      (add-hook 'yaml-mode-hook 'spacemacs/ansible-doc-maybe-enable))
+    (add-hook 'yaml-mode-hook 'spacemacs/ansible-doc-maybe-enable)
     :config
-    (progn
-      (spacemacs/set-leader-keys-for-minor-mode 'ansible-doc-mode
-        "ha" 'ansible-doc)
-      (spacemacs|hide-lighter ansible-doc-mode))))
+    (spacemacs/set-leader-keys-for-minor-mode 'ansible-doc-mode
+      "ha" 'ansible-doc)
+    (spacemacs|hide-lighter ansible-doc-mode)))
 
 (defun ansible/post-init-company ()
   ;; ansible-mode requires ac-user-dictionary-files. If the

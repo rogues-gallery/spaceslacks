@@ -1,27 +1,53 @@
-;;; core-env.el --- Spacemacs Core File
+;;; core-env.el --- Spacemacs Core File -*- lexical-binding: t -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (require 'core-dotspacemacs)
 (require 'load-env-vars)
 
 (defvar spacemacs-env-vars-file
-  (concat (or dotspacemacs-directory user-home-directory) ".spacemacs.env")
+  (concat
+   (if (file-directory-p dotspacemacs-directory)
+       dotspacemacs-directory
+     "~/")
+   ".spacemacs.env")
   "Absolute path to the env file where environment variables are set.")
 
 (defvar spacemacs-ignored-environment-variables
   '(
     "DBUS_SESSION_BUS_ADDRESS"
+    "DESKTOP_STARTUP_ID"
+    "DISPLAY"
     "GPG_AGENT_INFO"
+    "ICEAUTHORITY"
+    "INVOCATION_ID"
+    "JOURNAL_STREAM"
+    "MANAGERPID"
+    "SESSION_MANAGER"
     "SSH_AGENT_PID"
     "SSH_AUTH_SOCK"
+    "SYSTEMD_EXEC_PID"
+    "XAUTHORITY"
+    "XDG_SESSION_TYPE"
     )
   "Ignored environments variables.
 Environment variables with names matching these regexps are not
@@ -41,7 +67,9 @@ current contents of the file will be overwritten."
     (with-temp-file spacemacs-env-vars-file
       (let ((shell-command-switches (cond
                                      ((or(eq system-type 'darwin)
-                                         (eq system-type 'gnu/linux))
+                                         (eq system-type 'cygwin)
+                                         (eq system-type 'gnu/linux)
+                                         (eq system-type 'android))
                                       ;; execute env twice, once with a
                                       ;; non-interactive login shell and
                                       ;; once with an interactive shell
@@ -51,7 +79,9 @@ current contents of the file will be overwritten."
                                      ((eq system-type 'windows-nt) '("-c"))))
             (tmpfile (make-temp-file spacemacs-env-vars-file))
             (executable (cond ((or(eq system-type 'darwin)
-                                  (eq system-type 'gnu/linux)) "env")
+                                  (eq system-type 'cygwin)
+                                  (eq system-type 'gnu/linux)
+                                  (eq system-type 'android)) "env")
                               ((eq system-type 'windows-nt) "set"))))
         (insert
          (concat
@@ -83,7 +113,8 @@ current contents of the file will be overwritten."
           "\n"
           "# Environment variables:\n"
           "# ----------------------\n"))
-        (let ((env-point (point)))
+        (let ((process-environment initial-environment)
+              (env-point (point)))
           (dolist (shell-command-switch shell-command-switches)
             (call-process-shell-command
              (concat executable " > " (shell-quote-argument tmpfile)))

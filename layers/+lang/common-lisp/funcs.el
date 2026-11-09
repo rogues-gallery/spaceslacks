@@ -1,13 +1,25 @@
-;;; funcs.el --- Slime Layer functions File for Spacemacs
+;;; funcs.el --- Slime Layer functions File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 
 ;; Helm integration
@@ -55,14 +67,13 @@ An optional ARG can be used which is passed to `sp-up-sexp' to move out of more
 than one sexp.
 Requires smartparens because all movement is done using `sp-up-sexp'."
   (interactive "p")
-  (require 'smartparens)
   (let ((evil-move-beyond-eol t))
     ;; evil-move-beyond-eol disables the evil advices around eval-last-sexp
     (save-excursion
       (let ((max 10))
         (while (and (> max 0)
                     (sp-point-in-string-or-comment))
-          (decf max)
+          (cl-decf max)
           (sp-up-sexp)))
       (sp-up-sexp arg)
       (call-interactively 'slime-eval-last-expression))))
@@ -72,9 +83,17 @@ Requires smartparens because all movement is done using `sp-up-sexp'."
   "Call `eval-last-sexp' on the symbol around point.
 Requires smartparens because all movement is done using `sp-forward-symbol'."
   (interactive)
-  (require 'smartparens)
   (let ((evil-move-beyond-eol t))
     ;; evil-move-beyond-eol disables the evil advices around eval-last-sexp
     (save-excursion
       (sp-forward-symbol)
       (call-interactively 'slime-eval-last-expression))))
+
+
+(defun spacemacs/slime-repl ()
+  "Switches to slime repl if slime is connected, starts up slime if
+not."
+  (interactive)
+  (if (slime-connected-p)
+      (slime-switch-to-output-buffer)
+    (slime)))

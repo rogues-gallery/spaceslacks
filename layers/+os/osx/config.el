@@ -1,20 +1,24 @@
-;;; config.el --- OSX Layer config File for Spacemacs
+;;; config.el --- OSX Layer config File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
-
-(defvar osx-use-option-as-meta 'deprecated
-  "DEPRECATED. See README for OSX layer for new variables. If this
-   variable is set it will take precedence (for backwards compatibility).
-   If non nil the option key is mapped to meta. Set to `nil` if you need the
-   option key to type common characters.
-   Default: `deprecated'")
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (defvar osx-command-as 'hyper
   "Sets the key binding of the `COMMAND' key on macOS.
@@ -32,9 +36,7 @@
 (defvar osx-option-as 'meta
   "Sets the key binding of the `OPTION' key on macOS.
    Possible values are `super' `meta' `hyper' `alt' `none'.
-   Default: `meta'.
-   For backwards compatibility the variable `osx-use-option-as-meta'
-   takes precedence is set to t.")
+   Default: `meta'.")
 (defvar osx-function-as nil
   "Sets the key binding of the `FUNCTION' key on macOS.
    Possible values are `super' `meta' `hyper' `alt' `nil'.

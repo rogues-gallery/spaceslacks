@@ -1,13 +1,25 @@
-;;; packages.el --- mercury layer packages file for Spacemacs.
+;;; packages.el --- mercury layer packages file for Spacemacs.  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Ludvig Böklin <ludvig.boklin@protonmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defconst mercury-packages
   '((metal-mercury-mode :location (recipe
@@ -32,20 +44,17 @@
     :init
     :mode ("\\.m\\'" . metal-mercury-mode)
     :config
-    (progn
-      (dolist (x '(
-                   ;; ("m=" . "format")
-                   ("mc" . "mercury/compile")
-                   ;; ("mh" . "help")
-                   ))
-        (spacemacs/declare-prefix-for-mode 'metal-mercury-mode (car x) (cdr x)))
+    (dolist (x '(
+                 ;; ("m=" . "format")
+                 ("mc" . "mercury/compile")
+                 ;; ("mh" . "help")
+                 ))
+      (spacemacs/declare-prefix-for-mode 'metal-mercury-mode (car x) (cdr x)))
 
-      (spacemacs/set-leader-keys-for-major-mode 'metal-mercury-mode
-        ;; make
-        "cb" 'metal-mercury-mode-compile
-        "cr" 'metal-mercury-mode-runner))))
+    (spacemacs/set-leader-keys-for-major-mode 'metal-mercury-mode
+      ;; make
+      "cb" 'metal-mercury-mode-compile
+      "cr" 'metal-mercury-mode-runner)))
 
 (defun mercury/post-init-smartparens ()
-  (if dotspacemacs-smartparens-strict-mode
-      (add-hook 'metal-mercury-mode-hook #'smartparens-strict-mode)
-    (add-hook 'metal-mercury-mode-hook #'smartparens-mode)))
+  (add-hook 'metal-mercury-mode-hook #'spacemacs//activate-smartparens))

@@ -1,4 +1,4 @@
-;;; evil-unimpaired.el --- Pairs of handy bracket mappings.
+;;; evil-unimpaired.el --- Pairs of handy bracket mappings.  -*- lexical-binding: nil; -*-
 
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; Keywords: evil, vim-unimpaired, spacemacs
@@ -85,12 +85,10 @@
   'evil-unimpaired/insert-space-above)
 (define-key evil-normal-state-map (kbd "] SPC")
   'evil-unimpaired/insert-space-below)
-(define-key evil-normal-state-map (kbd "[ e") 'move-text-up)
-(define-key evil-normal-state-map (kbd "] e") 'move-text-down)
-(define-key evil-visual-state-map (kbd "[ e") ":move'<--1")
-(define-key evil-visual-state-map (kbd "] e") ":move'>+1")
-;; (define-key evil-visual-state-map (kbd "[ e") 'move-text-up)
-;; (define-key evil-visual-state-map (kbd "] e") 'move-text-down)
+(define-key evil-normal-state-map (kbd "[ e") 'drag-stuff-up)
+(define-key evil-normal-state-map (kbd "] e") 'drag-stuff-down)
+(define-key evil-visual-state-map (kbd "[ e") 'drag-stuff-up)
+(define-key evil-visual-state-map (kbd "] e") 'drag-stuff-down)
 ;; navigation
 (define-key evil-motion-state-map (kbd "[ b") 'previous-buffer)
 (define-key evil-motion-state-map (kbd "] b") 'next-buffer)

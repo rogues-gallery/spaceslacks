@@ -1,13 +1,25 @@
-;;; config.el --- Treemacs Layer configuration File for Spacemacs
+;;; config.el --- Treemacs Layer configuration File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Alexander Miller <alexanderm@web.de>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defvar treemacs-use-follow-mode t
   "When non-nil use `treemacs-follow-mode'.")
@@ -21,13 +33,9 @@ Possible values are:
  - `Frames' - to scope treemacs to the current frame
  - `Perspectives' - to scope treemacs in conjunction with `persp-mode'.")
 
-(defvar treemacs-use-git-mode
-  (pcase (cons (not (null (executable-find "git")))
-               (not (null (executable-find "python3"))))
-    (`(t . t) 'deferred)
-    (`(t . _) 'simple))
+(defvar treemacs-use-git-mode nil
   "Type of git integration for `treemacs-git-mode'.
-There are 2 possible values:
+There are 3 possible values:
 1) simple, which highlights only files based on their git status, and is
    slightly faster
 2) extended, which highlights both files and directories, but requires python
@@ -42,3 +50,10 @@ There are 2 possible values:
 
 (defvar treemacs-use-all-the-icons-theme nil
   "Enable the treemacs supported `all-the-icons' theme")
+
+(defvar treemacs-auto-hide-min-width 80
+  "Minimum frame width (in columns) excluding the treemacs window.
+
+If the frame is resized so that the width (excluding the treemacs window) is less than this value, the treemacs window will be automatically hidden.
+
+If nil, disable auto-hide.")

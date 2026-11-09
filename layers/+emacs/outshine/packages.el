@@ -1,13 +1,25 @@
-;;; packages.el --- Outshine layer packages file for Spacemacs.
+;;; packages.el --- Outshine layer packages file for Spacemacs.  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Langston Barrett <langston.barrett@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defconst outshine-packages
   '(outshine
@@ -17,29 +29,28 @@
   (use-package outshine
     :defer t
     :init
-    (progn
-      (add-hook 'prog-mode-hook          'outline-minor-mode)
-      (add-hook 'outline-minor-mode-hook 'outshine-mode))
+    (add-hook 'prog-mode-hook          'outline-minor-mode)
+    (add-hook 'outline-minor-mode-hook 'outshine-mode)
     :config
-    (progn
-      (spacemacs|hide-lighter outline-minor-mode)
-      (spacemacs|hide-lighter outshine-mode)
-      (spacemacs/declare-prefix "aO" "out(line/org/shine)")
-      (spacemacs/declare-prefix "aOg" "goto")
-      (spacemacs/declare-prefix "aOi" "insert")
-      (spacemacs/set-leader-keys
-        "aO."  'spacemacs/outshine-transient-state/body
-        "aOS"  'outline-show-all
-        "aOgu" 'outline-up-heading
-        "aOgn" 'outline-next-heading
-        "aOgj" 'outline-forward-same-level
-        "aOgk" 'outline-backward-same-level
-        "aOih" 'outline-insert-heading
-        "aOI"  'outshine-imenu
-        "aOK"  'outline-move-subtree-up
-        "aOJ"  'outline-move-subtree-down
-        "aO>"  'outline-demote
-        "aO<"  'outline-promote))
+    (spacemacs|hide-lighter outline-minor-mode)
+    (spacemacs|hide-lighter outshine-mode)
+    (spacemacs/declare-prefix
+      "aO"  "out(line/org/shine)"
+      "aOg" "goto"
+      "aOi" "insert")
+    (spacemacs/set-leader-keys
+      "aO."  'spacemacs/outshine-transient-state/body
+      "aOS"  'outline-show-all
+      "aOgu" 'outline-up-heading
+      "aOgn" 'outline-next-heading
+      "aOgj" 'outline-forward-same-level
+      "aOgk" 'outline-backward-same-level
+      "aOih" 'outline-insert-heading
+      "aOI"  'outshine-imenu
+      "aOK"  'outline-move-subtree-up
+      "aOJ"  'outline-move-subtree-down
+      "aO>"  'outline-demote
+      "aO<"  'outline-promote)
     (spacemacs|define-transient-state outshine
       :title "Outshine Transient State"
       :doc "
@@ -68,9 +79,8 @@ Navigate headings^^^^      Move subtrees^^^^               Other^^
   (use-package outorg
     :defer t
     :config
-    (progn
-      (spacemacs/set-leader-keys
-        "aOc"  'outorg-copy-edits-and-exit
-        "aOe"  'outorg-edit-as-org))))
+    (spacemacs/set-leader-keys
+      "aOc"  'outorg-copy-edits-and-exit
+      "aOe"  'outorg-edit-as-org)))
 
 ;;; packages.el ends here

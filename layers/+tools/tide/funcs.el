@@ -1,13 +1,25 @@
-;;; funcs.el --- Tide  Layer functions File for Spacemacs
+;;; funcs.el --- Tide  Layer functions File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Thanh Vuong <thanhvg@gmail.com>
 ;; URL: https://github.com/thanhvg
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defun spacemacs//tide-setup-bindings ()
   "Define keys bindings for `tide-mode'"
@@ -28,6 +40,7 @@
     "ri" #'tide-organize-imports
     "rr" #'tide-rename-symbol
     "rf" #'tide-rename-file
+    "rR" #'tide-refactor
     "S" "server"
     "Sr" #'tide-restart-server
     "Sj" #'spacemacs//tide-create-jsconfig-file))
@@ -35,7 +48,9 @@
 (defun spacemacs//tide-setup ()
   "Setup tide backend.
 Must be called by a layer using tide."
-  (evilified-state-evilify tide-references-mode tide-references-mode-map
+  (evilified-state-evilify-map tide-references-mode-map
+    :mode tide-references-mode
+    :bindings
     (kbd "C-k") 'tide-find-previous-reference
     (kbd "C-j") 'tide-find-next-reference
     (kbd "C-l") 'tide-goto-reference)
@@ -63,11 +78,8 @@ Must be called by a layer using tide."
   (eldoc-mode))
 
 (defun spacemacs//tide-setup-jump-handle ()
-  "Loop through `tide-managed-modes' and set jump handlers for these modes."
-  (dolist (mode tide-managed-modes)
-    (add-to-list
-     (intern (format "spacemacs-jump-handlers-%S" mode))
-     '(tide-jump-to-definition :async t))))
+  "Set jump handlers."
+  (add-to-list 'spacemacs-jump-handlers '(tide-jump-to-definition :async t)))
 
 (defun spacemacs//tide-create-jsconfig-file ()
   "Create a jsconfig file at project root."

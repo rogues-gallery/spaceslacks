@@ -1,13 +1,25 @@
-;;; packages.el --- sml Layer packages File for Spacemacs
+;;; packages.el --- sml Layer packages File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Keith Simmons <keith@the-simmons.net>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (setq sml-packages
       '(
@@ -23,39 +35,55 @@
     :commands run-sml
     :init (spacemacs/register-repl 'sml-mode 'run-sml "sml")
     :config
-    (progn
-      (defun spacemacs/sml-prog-proc-send-buffer-and-focus ()
-        "Send buffer to REPL and switch to it in `insert state'."
-        (interactive)
-        (sml-prog-proc-send-buffer t)
-        (evil-insert-state))
+    (defun spacemacs/sml-prog-proc-send-buffer-and-focus ()
+      "Send buffer to REPL and switch to it in `insert state'."
+      (interactive)
+      (sml-prog-proc-send-buffer t)
+      (evil-insert-state))
 
-      (defun spacemacs/sml-prog-proc-send-region-and-focus (start end)
-        "Send region to REPL and switch to it in `insert state'."
-        (interactive "r")
-        (sml-prog-proc-send-region start end t)
-        (evil-insert-state))
+    (defun spacemacs/sml-prog-proc-send-region-and-focus (start end)
+      "Send region to REPL and switch to it in `insert state'."
+      (interactive "r")
+      (sml-prog-proc-send-region start end t)
+      (evil-insert-state))
 
-      (defun spacemacs/sml-send-function-and-focus ()
-        "Send function at point to REPL and switch to it in `insert state'."
-        (interactive)
-        (sml-send-function t)
-        (evil-insert-state))
+    (defun spacemacs/sml-send-function-and-focus ()
+      "Send function at point to REPL and switch to it in `insert state'."
+      (interactive)
+      (sml-send-function t)
+      (evil-insert-state))
 
-      (spacemacs/set-leader-keys-for-major-mode 'sml-mode
-        ;; REPL
-        "'"  'run-sml
-        "sb" 'sml-prog-proc-send-buffer
-        "sB" 'spacemacs/sml-prog-proc-send-buffer-and-focus
-        "sf" 'sml-send-function
-        "sF" 'spacemacs/sml-send-function-and-focus
-        "si" 'run-sml
-        "sr" 'sml-prog-proc-send-region
-        "sR" 'spacemacs/sml-prog-proc-send-region-and-focus
-        "ss" 'run-sml)
-      (define-key sml-mode-map (kbd "RET") 'reindent-then-newline-and-indent)
-      (define-key sml-mode-map (kbd "M-SPC") 'sml-electric-space)
-      (define-key sml-mode-map (kbd "|") 'sml-electric-pipe))))
+    (defun spacemacs/sml-format-buffer ()
+      "Format the current buffer with 'smlfmt'"
+      (interactive)
+      (if (executable-find "smlfmt")
+          (let ((exit-code (shell-command-on-region
+             (point-min)
+             (point-max)
+             "smlfmt --check --read-only"
+             (current-buffer)
+             t
+             "*Messages*"
+             t)))
+            (if (zerop exit-code)
+                (message "Formatting Done.")
+              (message "Formatting Failed!")))
+          (error "smlfmt not found. Please refer to the README to install it.")))
+
+    (spacemacs/set-leader-keys-for-major-mode 'sml-mode
+      ;; REPL
+      "'"  'run-sml
+      "sb" 'sml-prog-proc-send-buffer
+      "sB" 'spacemacs/sml-prog-proc-send-buffer-and-focus
+      "sf" 'sml-send-function
+      "sF" 'spacemacs/sml-send-function-and-focus
+      "si" 'run-sml
+      "sr" 'sml-prog-proc-send-region
+      "sR" 'spacemacs/sml-prog-proc-send-region-and-focus
+      "ss" 'run-sml
+      "s=" 'spacemacs/sml-format-buffer)
+    (define-key sml-mode-map (kbd "M-SPC") 'sml-electric-space)
+    (define-key sml-mode-map (kbd "|") 'sml-electric-pipe)))
 
 (defun sml/post-init-smartparens ()
   (with-eval-after-load 'smartparens

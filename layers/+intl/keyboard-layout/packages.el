@@ -1,13 +1,25 @@
-;;; packages.el --- keyboard-layout Layer Packages File for Spacemacs
+;;; packages.el --- keyboard-layout Layer Packages File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Fabien Dubosson <fabien.dubosson@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (defconst keyboard-layout-packages
   '(
@@ -18,11 +30,11 @@
     ediff
     elfeed
     evil
+    evil-collection
     evil-cleverparens
     evil-escape
     evil-evilified-state
     evil-lisp-state
-    evil-magit
     evil-surround
     eyebrowse
     flycheck
@@ -88,10 +100,10 @@
     :loader
     (with-eval-after-load 'shell BODY)
     :common
-    (dolist (m '(normal insert))
-      (eval `(kl/evil-correct-keys `,m comint-mode-map
-               "C-j"
-               "C-k")))))
+    (dolist (state '(normal insert))
+      (kl/evil-correct-keys state comint-mode-map
+        "C-j"
+        "C-k"))))
 
 (defun keyboard-layout/pre-init-company ()
   (kl|config company
@@ -112,7 +124,7 @@
     "Remap `ediff' bindings."
     :loader
     ;; HACK: ediff-mode-map is only defined when ediff is started
-    (add-hook 'ediff-startup-hook #'(lambda () BODY))
+    (add-hook 'ediff-startup-hook (lambda () BODY))
     :common
     (kl/correct-keys ediff-mode-map
       "h"
@@ -278,22 +290,22 @@
       "K"
       "L")))
 
-(defun keyboard-layout/pre-init-evil-magit ()
-  (kl|config evil-magit
+(defun keyboard-layout/pre-init-evil-collection ()
+  (kl|config evil-collection
     :description
-    "Remap `evil-magit' bindings."
+    "Remap `evil-collection-magit' bindings."
     :loader
-    (with-eval-after-load 'evil-magit BODY)
+    (with-eval-after-load 'evil-collection-magit BODY)
     :common
-    (dolist (state (if evil-magit-use-y-for-yank
-                       (list evil-magit-state 'visual)
-                     (list evil-magit-state)))
+    (dolist (state (if evil-collection-magit-use-y-for-yank
+                       (list evil-collection-magit-state 'visual)
+                     (list evil-collection-magit-state)))
       (kl/evil-correct-keys state magit-mode-map
         "j"
         "k"
         "C-j"
         "C-k"))
-    (kl/evil-correct-keys 'normal evil-magit-toggle-text-minor-mode-map
+    (kl/evil-correct-keys 'normal evil-collection-magit-toggle-text-minor-mode-map
       "C-j")))
 
 (defun keyboard-layout/pre-init-evil-surround ()
@@ -436,10 +448,7 @@
                        magit-module-commit-section-map
                        magit-stash-section-map
                        magit-stashes-section-map
-                       magit-tag-section-map
-                       magit-unpulled-section-map
-                       magit-unpushed-section-map
-                       magit-untracked-section-map))
+                       magit-tag-section-map))
       (kl/correct-keys map
         "j"
         "k"
@@ -511,26 +520,25 @@
       (evil-define-key 'normal evil-org-mode-map
         "t" 'evil-next-line
         "j" 'org-todo)
-      (dolist (m '(normal insert))
-        (eval `(evil-define-key ',m evil-org-mode-map
-                 ;; ctsr
-                 (kbd "M-c") 'org-metaleft
-                 (kbd "M-t") 'org-metadown
-                 (kbd "M-s") 'org-metaup
-                 (kbd "M-r") 'org-metaright
-                 (kbd "M-C") 'org-shiftmetaleft
-                 (kbd "M-T") 'org-shiftmetadown
-                 (kbd "M-S") 'org-shiftmetaup
-                 (kbd "M-R") 'org-shiftmetaright
-                 ;; hjkl
-                 (kbd "M-h") 'capitalize-word
-                 (kbd "M-j") 'transpose-chars
-                 (kbd "M-k") 'kill-sentence
-                 (kbd "M-l") 'move-to-window-line-top-bottom
-                 (kbd "M-H") 'capitalize-word
-                 (kbd "M-J") 'transpose-chars
-                 (kbd "M-K") 'kill-sentence
-                 (kbd "M-L") 'move-to-window-line-top-bottom)))
+      (evil-define-key '(normal insert) evil-org-mode-map
+        ;; ctsr
+        (kbd "M-c") 'org-metaleft
+        (kbd "M-t") 'org-metadown
+        (kbd "M-s") 'org-metaup
+        (kbd "M-r") 'org-metaright
+        (kbd "M-C") 'org-shiftmetaleft
+        (kbd "M-T") 'org-shiftmetadown
+        (kbd "M-S") 'org-shiftmetaup
+        (kbd "M-R") 'org-shiftmetaright
+        ;; hjkl
+        (kbd "M-h") 'capitalize-word
+        (kbd "M-j") 'transpose-chars
+        (kbd "M-k") 'kill-sentence
+        (kbd "M-l") 'move-to-window-line-top-bottom
+        (kbd "M-H") 'capitalize-word
+        (kbd "M-J") 'transpose-chars
+        (kbd "M-K") 'kill-sentence
+        (kbd "M-L") 'move-to-window-line-top-bottom)
       (spacemacs/set-leader-keys-for-major-mode 'org-mode
         ;; ctsr
         "C-S-c" 'org-shiftcontrolleft
@@ -563,6 +571,13 @@
             "E" 'org-forward-element
             "I" 'org-backward-element
             "N" 'org-backward-heading-same-level))))
+    :dvp
+    (progn
+      (spacemacs|use-package-add-hook evil-org
+        :post-config
+        (evil-define-key 'normal evil-org-mode-map
+          "d" 'evil-backward-char
+          "j" 'evil-org-delete)))
     :neo
     (progn
       (spacemacs|use-package-add-hook evil-org
@@ -575,26 +590,25 @@
             "gr" 'org-backward-heading-same-level
             "gj" nil
             "gk" nil)
-          (dolist (m '(normal insert))
-            (eval `(evil-define-key ',m evil-org-mode-map
-                     ;; snrt
-                     (kbd "M-s") 'org-metaleft
-                     (kbd "M-n") 'org-metadown
-                     (kbd "M-r") 'org-metaup
-                     (kbd "M-t") 'org-metaright
-                     (kbd "M-S") 'org-shiftmetaleft
-                     (kbd "M-N") 'org-shiftmetadown
-                     (kbd "M-R") 'org-shiftmetaup
-                     (kbd "M-T") 'org-shiftmetaright
-                     ;; hjkl
-                     (kbd "M-h") 'capitalize-word
-                     (kbd "M-j") 'transpose-chars
-                     (kbd "M-k") 'kill-sentence
-                     (kbd "M-l") 'move-to-window-line-top-bottom
-                     (kbd "M-H") 'capitalize-word
-                     (kbd "M-J") 'transpose-chars
-                     (kbd "M-K") 'kill-sentence
-                     (kbd "M-L") 'move-to-window-line-top-bottom)))
+          (evil-define-key '(normal insert) evil-org-mode-map
+            ;; snrt
+            (kbd "M-s") 'org-metaleft
+            (kbd "M-n") 'org-metadown
+            (kbd "M-r") 'org-metaup
+            (kbd "M-t") 'org-metaright
+            (kbd "M-S") 'org-shiftmetaleft
+            (kbd "M-N") 'org-shiftmetadown
+            (kbd "M-R") 'org-shiftmetaup
+            (kbd "M-T") 'org-shiftmetaright
+            ;; hjkl
+            (kbd "M-h") 'capitalize-word
+            (kbd "M-j") 'transpose-chars
+            (kbd "M-k") 'kill-sentence
+            (kbd "M-l") 'move-to-window-line-top-bottom
+            (kbd "M-H") 'capitalize-word
+            (kbd "M-J") 'transpose-chars
+            (kbd "M-K") 'kill-sentence
+            (kbd "M-L") 'move-to-window-line-top-bottom)
           (spacemacs/set-leader-keys-for-major-mode 'org-mode
             ;; snrt
             "C-S-s" 'org-shiftcontrolleft

@@ -1,13 +1,25 @@
-;;; funcs.el --- Spacemacs Purpose Layer functions File
+;;; funcs.el --- Spacemacs Purpose Layer functions File  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Bar Magal
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 
 ;; eyebrowse integration
@@ -46,20 +58,34 @@ windows correctly."
 
 ;; Popwin integration
 
+(defun spacemacs/window-purpose-save-dedicated-windows (&rest args)
+  "Saves the dedicated windows before popwin:create-popup-windows"
+
+  ;; save the dedicated windows
+  (setq window-purpose--dedicated-windows
+        (cl-loop for window in (window-list)
+                 if (purpose-window-purpose-dedicated-p window)
+                 collect (window-buffer window))))
+
+(defun spacemacs/window-purpose-restore-dedicated-windows (&rest args)
+  "Restores the dedicated windows after popwin:create-popup-windows"
+  (cl-loop for buffer in window-purpose--dedicated-windows
+           do (cl-loop for window in (get-buffer-window-list buffer)
+                       do (purpose-set-window-purpose-dedicated-p
+                           window t))))
+
 (defun spacemacs/window-purpose-sync-popwin ()
   "Synchronize window-purpose layer with popwin.
-Enable or disable advices to popwin, according to the state of `purpose-mode'."
+Enable or disable advice to popwin, according to the state of `purpose-mode'."
   (require 'window-purpose)
   (if purpose-mode
       (progn
-        (ad-enable-advice 'popwin:create-popup-window
-                          'before 'window-purpose/save-dedicated-windows)
-        (ad-enable-advice 'popwin:create-popup-window
-                          'after 'window-purpose/restore-dedicated-windows)
-        (ad-update 'popwin:create-popup-window)
-        (ad-activate 'popwin:create-popup-window))
-    (ad-disable-advice 'popwin:create-popup-window
-                       'before 'window-purpose/save-dedicated-windows)
-    (ad-disable-advice 'popwin:create-popup-window
-                       'after 'window-purpose/restore-dedicated-windows)
-    (ad-update 'popwin:create-popup-window)))
+        (advice-add #'popwin:create-popup-window
+                    :before #'spacemacs/window-purpose-save-dedicated-windows)
+        (advice-add #'popwin:create-popup-window
+                    :after #'spacemacs/window-purpose-restore-dedicated-windows))
+
+    (advice-remove #'popwin:create-popup-window
+                   #'spacemacs/window-purpose-save-dedicated-windows)
+    (advice-remove #'popwin:create-popup-window
+                   #'spacemacs/window-purpose-restore-dedicated-windows)))

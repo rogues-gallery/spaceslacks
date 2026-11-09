@@ -1,22 +1,38 @@
-;;; config.el --- C/C++ Layer config File for Spacemacs
+;;; config.el --- C/C++ Layer config File for Spacemacs  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 ;; variables
 
 (spacemacs|define-jump-handlers c++-mode)
 (spacemacs|define-jump-handlers c-mode)
 
-(defvar c-c++-backend nil
+(defvar c-c++-backend (cond
+                        ((configuration-layer/layer-used-p 'lsp) 'lsp-clangd)
+                        ((configuration-layer/layer-used-p 'eglot) 'eglot)
+                        (t nil))
   "The backend to use for IDE features.
-Possible values are `lsp-ccls', `lsp-clangd', `rtags' and `ycmd'.")
+Possible values are `lsp-ccls', `lsp-clangd', `eglot', `rtags' and `ycmd'.
+If `nil' then the default backend unless the `lsp' or `eglot' layer is used.")
 
 
 ;; lsp
@@ -34,6 +50,18 @@ By default `font-lock' is used to highlight the text, set the variable to
 `overlay' if you want to use overlays. Note that overlays can be slower.")
 
 
+;; dap
+
+(defvar c-c++-dap-adapters '(dap-cpptools)
+  "Debug adapters to use for IDE debug features.
+
+By default only `dap-cpptools' is used.
+
+Add `dap-cpptools' for the official Microsoft C/C++ Extension for VSCode.
+Add `dap-lldb' for the official LLDB project adapter.
+Add `dap-gdb-lldb' for the WebFreak Native Debug extension.")
+
+
 ;; rtags
 
 (defvar c-c++-enable-rtags-completion t
@@ -48,8 +76,8 @@ By default `font-lock' is used to highlight the text, set the variable to
 
 
 ;; style
-
-(defvar c++-enable-organize-includes-on-save nil
+(define-obsolete-variable-alias 'c++-enable-organize-includes-on-save 'c-c++-enable-organize-includes-on-save nil)
+(defvar c-c++-enable-organize-includes-on-save nil
   "If non-nil then automatically organize the includes on save C++ buffer.")
 
 (defvar c-c++-enable-auto-newline nil
@@ -66,8 +94,14 @@ By default `font-lock' is used to highlight the text, set the variable to
 
 ;; misc
 
-(defvar c-c++-default-mode-for-headers (when (not (functionp 'c-or-c++-mode)) 'c-mode)
+(defvar c-c++-default-mode-for-headers (unless (functionp 'c-or-c++-mode) 'c-mode)
   "Default mode to open header files. Can be `c-mode' or `c++-mode', or `c-or-c++-mode' for Emacs > 26+.")
+
+(defvar c-c++-formatter-indent-line nil
+  "When non-nil, indent the line with formatter.
+If the `lsp' available, try `lsp-format-region' to indent the line;
+If the `clang-format' available, try `clang-format-region' to indent the line;
+Otherwise indent the line with built-in functions.")
 
 (defvar c-c++-adopt-subprojects nil
   "When non-nil, projectile will remember project root when visiting files in subprojects")

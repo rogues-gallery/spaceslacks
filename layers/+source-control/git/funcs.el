@@ -1,16 +1,33 @@
-;;; funcs.el --- Colors Layer functions File
+;;; funcs.el --- Colors Layer functions File  -*- lexical-binding: nil; -*-
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2025 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 
 ;; magit
+
+(defun spacemacs/magit-status ()
+  "Show the `magit-status' of the Spacemacs directory."
+  (interactive)
+  (magit-status spacemacs-start-directory))
 
 (defun spacemacs/magit-toggle-whitespace ()
   "Toggle whitespace in `magit-diff-mode'."
@@ -40,14 +57,14 @@
   "Allow the user to get a permalink via git-link in a git-timemachine buffer."
   (interactive)
   (let ((git-link-use-commit t))
-    (call-interactively 'git-link-commit)))
+    (call-interactively 'git-link)))
 
 (defun spacemacs/git-permalink-copy-url-only ()
   "Allow the user to get a permalink via git-link in a git-timemachine buffer."
   (interactive)
   (let (git-link-open-in-browser
         (git-link-use-commit t))
-    (call-interactively 'git-link-commit)))
+    (call-interactively 'git-link)))
 
 (defun spacemacs/git-link-copy-url-only ()
   "Only copy the generated link to the kill ring."
@@ -61,21 +78,10 @@
   (let (git-link-open-in-browser)
     (call-interactively 'git-link-commit)))
 
-
-(defun spacemacs//support-evilified-buffer-p (style)
-  "Return non-nil if evil navigation should be enabled for STYLE."
-  (or (eq style 'vim)
-      (and (eq style 'hybrid)
-           hybrid-style-enable-evilified-state)))
-
-(defun spacemacs//magit-evil-magit-bindings (style)
-  "Set `evil-magit' bindings for the given editing STYLE."
-  (cond
-   ((spacemacs//support-evilified-buffer-p style)
-    (evil-magit-init))
-   (t
-    (when (featurep 'evil-magit)
-      (evil-magit-revert)))))
+(defun spacemacs//magit-buffer-p (buf)
+  "Return non-nil if and only if BUF's major-mode is derived from
+`magit-mode'."
+  (provided-mode-derived-p (buffer-local-value 'major-mode buf) 'magit-mode))
 
 
 ;; git blame transient state
@@ -126,14 +132,14 @@ error in process filter: ghub--signal-error: peculiar error:
  (typeName . \"Query\")
  (fieldName . \"nil\"))
  (locations ((line . 2) (column . 1)))
- (message . \"Field 'nil' doesn't exist on type 'Query'\"))
+ (message . \"Field `nil' doesn't exist on type `Query'\"))
 
 Function adapted from issue:
 https://github.com/magit/forge/issues/80#issuecomment-456103195
 "
   (interactive "xs-exp: ")
   (message "%s" err)
-  (let* ((query_value (third (car err)))
+  (let* ((query_value (cl-third (car err)))
          (result (car (forge-sql
                        [:select [owner name]
                                 :from repository
